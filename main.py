@@ -1,9 +1,14 @@
-from cnn_model import ActivationFunction, InitMethod
+from torch import nn
+from torchvision.models import ResNet18_Weights
+
 from train import train
+from test import test
+import csv
+from torchvision import models
 
 
 def main():
-    train(ActivationFunction.RELU, InitMethod.KAIMING)
+    train()
 
 
 if __name__ == '__main__':

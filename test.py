@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import torch.nn as nn
 
-from cnn_model import CNNModel, ActivationFunction, InitMethod
 from data_loader import test_loader
 from evaluate import evaluate_model
+from model import get_model
 
 
 def _create_plot(loss, accuracy, model_name):
@@ -19,14 +19,8 @@ def _create_plot(loss, accuracy, model_name):
     plt.show()
 
 
-def test(
-        model_path: str,
-        model_name: str,
-        activation_function: ActivationFunction,
-        init_method: InitMethod
-):
-    model = CNNModel(activation_function, init_method)
-    model.load(model_path)
+def test(model_path: str, model_name: str):
+    model = get_model(model_path)
     criterion = nn.CrossEntropyLoss()
     loss, accuracy = evaluate_model(model, test_loader, criterion)
 

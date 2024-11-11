@@ -1,3 +1,6 @@
 .idea
 data
 models
+accuracy
+checkpoints
+model

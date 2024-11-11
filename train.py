@@ -2,12 +2,12 @@ import torch.optim as optim
 import torch.nn as nn
 from datetime import datetime
 
-from cnn_model import CNNModel, ActivationFunction, InitMethod
 from data_loader import train_loader, validation_loader
 from evaluate import evaluate_model
+from model import get_model, save_model, save_accuracy
 
 
-def _train_one_epoch(model: CNNModel, loader, criterion, optimizer):
+def _train_one_epoch(model: nn.Module, loader, criterion, optimizer):
     model.train()
     for images, labels in loader:
         optimizer.zero_grad()  # Clear the gradients
@@ -32,34 +32,29 @@ def _graceful_shutdown():
     signal.signal(signal.SIGINT, signal_handler)
 
 
-def train(
-        activation_function: ActivationFunction,
-        init_method: InitMethod,
-        epoch=0,
-        model_path=None,
-):
+def train(epoch=1, model_path=None):
     _graceful_shutdown()
-    model = CNNModel(activation_function, init_method)
-    if model_path is not None:
-        model.load(model_path)
+
+    model = get_model(model_path)
 
     criterion = nn.CrossEntropyLoss()
-    l2_lambda = 0.001
-    optimizer = optim.Adam(model.parameters(), lr=0.001, weight_decay=l2_lambda)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     prev_validation_loss = 0.
 
-    print(f'Start training model: {model.name}')
+    print('Start training model')
     while True:
-        epoch += 1
         _train_one_epoch(model, train_loader, criterion, optimizer)
+
         validation_loss, accuracy = evaluate_model(model, validation_loader, criterion)
         loss_change = validation_loss - prev_validation_loss
         prev_validation_loss = validation_loss
 
-        model.save(epoch)
+        save_model(model, epoch)
+        save_accuracy(accuracy, epoch)
 
         print(f'Epoch {epoch}, Validation Loss: {validation_loss:.4f}, Accuracy: {accuracy:.2f}%')
         print(f'Validation loss change: {loss_change}')
         print(datetime.now())
         print('--------------------------------------------------')
+        epoch += 1
